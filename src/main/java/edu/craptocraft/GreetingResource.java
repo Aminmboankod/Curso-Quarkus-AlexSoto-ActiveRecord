@@ -3,7 +3,9 @@ package edu.craptocraft;
 import java.net.URI;
 import java.util.List;
 import edu.craptocraft.repository.Developer;
+import edu.craptocraft.repository.DeveloperRepository;
 import io.smallrye.common.constraint.NotNull;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -17,32 +19,14 @@ import jakarta.ws.rs.core.Response;
 @Path("/dev")
 public class GreetingResource {
 
-    // @GET
-    // @Path("{id}")
-    // @Produces(MediaType.APPLICATION_JSON)
-    // public Developer getDev(@PathParam("id") Long id) {
-    // return Developer.findById(id);
-    // }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Developer> getAllDevs() {
-        return Developer.findAll().list();
-    }
+    @Inject
+    DeveloperRepository developerRepository;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{name}")
     public Developer findByName(@PathParam("name") String name) {
-        return Developer.find("name", name).firstResult();
-    }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("{name}/{age}")
-    public Developer findByNameAndAge(@NotNull @PathParam("name") String name, @PathParam("age") Integer age) {
-        // Developer.find("query").page()
-        return Developer.find("name = ?1 and age = ?2", name, age).firstResult();
+        return developerRepository.findByName(name);
     }
 
     @POST
@@ -50,8 +34,8 @@ public class GreetingResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createDev(Developer dev) {
 
-        dev.persist();
-        return Response.created(URI.create("/dev/" + dev.id))
+        developerRepository.create(dev);
+        return Response.created(URI.create("/dev/" + dev.getId()))
                 .build();
     }
 }
